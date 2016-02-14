@@ -194,7 +194,8 @@ def make_tweet():
 
   if not options.dry_run:
     print 'Posting to twitter ...'
-    post_to_twitter(tweet, img_bytes)
+    print 'maybe truncating'
+    post_to_twitter(maybe_truncate(tweet), img_bytes)
 
   return tweet
 

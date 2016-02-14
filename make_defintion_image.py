@@ -42,24 +42,30 @@ def make(word, definition):
   print bg_file
   bg = Image.open(bg_dir + '/' + bg_file)
   img.paste(bg, (0, 0))
-  
-  # draw word we are defining
+ 
+  # calculate word size 
   word_fontfile = 'fonts/Times New Roman.ttf'
   (word_font, word_size, word_width, word_height) = max_fontsize_for_box(draw, word_fontfile, word, width*0.625, height*0.25)
-  
-  word_width_padding = (width - word_width) / 2
-  word_height_padding = height * 0.125
-  draw.text((word_width_padding, word_height_padding), word, font=word_font, fill='black')
- 
-  # draw definition 
+
+  # calculate definition size
   definition_lines = textwrap.wrap(definition, 40)
   wrapped_definition = '\n'.join(definition_lines)
 
   (definition_font, definition_size, definition_width, definition_height) = max_fontsize_for_box(
     draw, word_fontfile, wrapped_definition, width * 0.75, height * 0.5)
-  definition_width_padding = (width - definition_width) / 2
-  definition_height_padding = word_height_padding + word_height + (height * 0.10)
-  draw.text((definition_width_padding, definition_height_padding), wrapped_definition, font=definition_font, fill='black')
+
+  definition_height_padding = height * 0.10
+  total_height = word_height + definition_height + definition_height_padding
+
+  # draw word we are defining
+  word_x = (width - word_width) / 2
+  word_y = (height - total_height) / 2
+  draw.text((word_x, word_y), word, font=word_font, fill='black')
+ 
+  # draw definition 
+  definition_x = (width - definition_width) / 2
+  definition_y = word_y + word_height + definition_height_padding
+  draw.text((definition_x, definition_y), wrapped_definition, font=definition_font, fill='black')
 
   return img
 
