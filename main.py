@@ -6,6 +6,12 @@ import twitter
 import keys
 import io
 import make_defintion_image
+import bisect
+from optparse import OptionParser
+
+parser = OptionParser()
+parser.add_option("-d", "--dry_run", dest="dry_run", action="store_true")
+(options, args) = parser.parse_args()
 
 print 'Loading words ...'
 #nouns, verbs, adjectives, adverbs = [list(wn.all_synsets(pos=POS)) for POS in [wn.NOUN, wn.VERB, wn.ADJ, wn.ADV]]
@@ -21,9 +27,9 @@ def phrase_to_string(phrase): return ' '.join(s.lemmas[0].name for s in phrase)
 def gen_password(): return phrase_to_string(gen_phrase(adverbs, adjectives, adjectives, nouns))
 
 bird_patterns = [
-  '%sbird',
-  '%s Eagle',
-  '%s Owl'
+  ('%sbird', 10),
+  ('%s Eagle', 3),
+  ('%s Owl', 3)
 ]
 
 service_nouns = [
@@ -83,11 +89,55 @@ sets = [
   { 'noun': mobile_nouns, 'verb': mobile_verbs, 'weight': 3 }
 ]
 
+def get_weighted_entry(items):
+  mysum = 0
+  breakpoints = [] 
+  items = list(items)
+
+  for i in items:
+    mysum += i['weight']
+    breakpoints.append(mysum)
+ 
+  print 'total: %s' % mysum
+  score = random.randint(0, mysum - 1)
+  print 'picking elem %s' % score
+  
+  runningsum = 0
+  for i in items:
+    if score >= runningsum and score < runningsum + i['weight']:
+      return i
+    runningsum += i['weight']
+
+  return items[-1]
+
+
+def get_weighted_item(items):
+  mysum = 0
+  breakpoints = [] 
+
+  for i in items:
+    mysum += i[1]
+    breakpoints.append(mysum)
+ 
+  print 'total: %s' % mysum
+  score = random.randint(0, mysum - 1)
+  print 'picking elem %s' % score
+  
+  runningsum = 0
+  for i in items:
+    if score >= runningsum and score < runningsum + i[1]:
+      return i[0]
+    runningsum += i[1]
+  return items[-1]
+  
+def get_pattern():
+  return get_weighted_item(bird_patterns)
+
 def get_wordset():
-  return random.choice(sets)
+  return get_weighted_entry(sets)
 
 def make_name(noun):
-  pattern = random.choice(bird_patterns)
+  pattern = get_pattern()
 
   if ' ' in pattern:
     name = pattern % noun.lemmas()[0].name().replace('_', ' ')
@@ -116,10 +166,13 @@ def make_full_definition(definition):
 
   return '%(article)s %(noun)s for %(verb)s %(definition)s' % filldict
 
-def maybe_truncate(string, max_length=140):
+def maybe_truncate(string, max_length=120):
   if len(string) > max_length:
     print 'too long, truncating'
-    return string[:max_length-1] + u"\u2026"
+    ret = string[:max_length-1] + u"\u2026"
+    print ret
+    print len(ret)
+    return ret
   return string
 
 def make_tweet():
@@ -139,8 +192,9 @@ def make_tweet():
 
   print tweet
 
-  print 'Posting to twitter ...'
-  post_to_twitter(maybe_truncate(tweet), img_bytes)
+  if not options.dry_run:
+    print 'Posting to twitter ...'
+    post_to_twitter(tweet, img_bytes)
 
   return tweet
 
@@ -156,7 +210,8 @@ def post_to_twitter(text, img_bytes):
   ))
 
   if img_bytes:
-    id_img1 = t_up.media.upload(media=img_bytes)["media_id_string"]
+    img_resp = t_up.media.upload(media=img_bytes)
+    id_img1 = img_resp["media_id_string"]
   else:
     id_img1 = None
 
