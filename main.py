@@ -11,6 +11,7 @@ from optparse import OptionParser
 
 parser = OptionParser()
 parser.add_option("-d", "--dry_run", dest="dry_run", action="store_true")
+parser.add_option("-n", "--num", dest="num", type="int", default=1)
 (options, args) = parser.parse_args()
 
 print 'Loading words ...'
@@ -224,9 +225,7 @@ def post_to_twitter(text, img_bytes):
   print 'http://twitter.com/%s/status/%s' % (response['user']['screen_name'], response['id'])
 
 if __name__ == "__main__":
-  tweet = make_tweet()
-  tweet = make_tweet()
-  tweet = make_tweet()
-  tweet = make_tweet()
+  for i in range(0, options.num):
+    tweet = make_tweet()
 
   # post_to_twitter(tweet, [])

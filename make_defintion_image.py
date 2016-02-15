@@ -37,7 +37,7 @@ def make(word, definition):
   draw = ImageDraw.Draw(img)
 
   # put down background
-  bg_dir = 'backgrounds'
+  bg_dir = os.path.dirname(os.path.realpath(__file__)) + '/' + 'backgrounds'
   bg_file = get_random_file(bg_dir)
   print bg_file
   bg = Image.open(bg_dir + '/' + bg_file)
