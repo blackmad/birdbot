@@ -44,7 +44,8 @@ def make(word, definition):
   img.paste(bg, (0, 0))
  
   # calculate word size 
-  word_fontfile = 'fonts/Times New Roman.ttf'
+  word_fontfile = os.path.dirname(os.path.realpath(__file__)) + '/' + 'fonts/Times New Roman.ttf'
+  print word_fontfile
   (word_font, word_size, word_width, word_height) = max_fontsize_for_box(draw, word_fontfile, word, width*0.625, height*0.25)
 
   # calculate definition size
